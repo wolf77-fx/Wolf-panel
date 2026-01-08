@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOLF Panel | Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6366f1; /* Indigo */
+            --primary-dark: #4f46e5;
+            --bg-dark: #0f172a; /* Slate 900 */
+            --bg-card: #1e293b; /* Slate 800 */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* --- Login Screen --- */
+        #login-section {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark); z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .login-box {
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .login-logo { font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--primary); }
+        .login-logo i { margin-right: 10px; }
+
+        .input-group { margin-bottom: 1.5rem; text-align: left; }
+        .input-group label { display: block; color: var(--text-muted); margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .input-group input {
+            width: 100%; padding: 12px;
+            background: var(--bg-dark); border: 1px solid #334155;
+            border-radius: 0.5rem; color: white; outline: none; transition: 0.3s;
+        }
+        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+
+        .btn-login {
+            width: 100%; padding: 12px; background: var(--primary); color: white;
+            border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: 0.3s;
+        }
+        .btn-login:hover { background: var(--primary-dark); }
+
+        /* --- Dashboard Layout --- */
+        #dashboard-section { display: none; flex: 1; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px; background: var(--bg-card); height: 100vh; position: fixed;
+            border-right: 1px solid rgba(255,255,255,0.05); padding: 1.5rem;
+            display: flex; flex-direction: column;
+        }
+        
+        .sidebar-header { font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 2rem; display: flex; align-items: center; gap: 10px; }
+        
+        .nav-item {
+            padding: 12px 16px; color: var(--text-muted); text-decoration: none;
+            border-radius: 0.5rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 12px;
+            transition: 0.3s; cursor: pointer;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+        .nav-item i { width: 20px; text-align: center; }
+
+        .user-info { margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        /* Main Content */
+        .main-content { margin-left: 260px; padding: 2rem; width: calc(100% - 260px); }
+        
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .page-title { font-size: 1.5rem; font-weight: 600; }
+        
+        /* Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card {
+            background: var(--bg-card); padding: 1.5rem; border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column;
+        }
+        .stat-value { font-size: 2rem; font-weight: 700; margin: 0.5rem 0; }
+        .stat-label { color: var(--text-muted); font-size: 0.9rem; }
+        .stat-icon { align-self: flex-start; padding: 10px; border-radius: 8px; background: rgba(99, 102, 241, 0.1); color: var(--primary); margin-bottom: 10px; }
+
+        /* Forms & Tables */
+        .panel { background: var(--bg-card); border-radius: 1rem; border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; margin-bottom: 2rem; }
+        .panel-header { margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .form-control { width: 100%; padding: 10px; background: var(--bg-dark); border: 1px solid #334155; border-radius: 0.5rem; color: white; }
+        
+        .btn { padding: 10px 20px; border-radius: 0.5rem; border: none; font-weight: 500; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.3); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { color: var(--text-muted); font-weight: 500; font-size: 0.85rem; text-transform: uppercase; }
+        td { font-size: 0.95rem; }
+        
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .status-active { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .status-used { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        /* API Modal */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: var(--bg-card); padding: 2rem; border-radius: 1rem; width: 500px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .code-block {
+            background: #000; padding: 1rem; border-radius: 0.5rem; font-family: monospace;
+            color: #10b981; margin: 1rem 0; overflow-x: auto; white-space: pre-wrap;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar { display: none; } /* Simplified for mobile */
+            .main-content { margin-left: 0; width: 100%; padding: 1rem; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <section id="login-section">
+        <div class="login-box">
+            <div class="login-logo"><i class="fas fa-shield-alt"></i> WOLF Panel</div>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Sign In to manage your keys</p>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="Enter username">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter password">
+            </div>
+            <button class="btn-login" onclick="login()">Login Access</button>
+            <p id="error-msg" style="color: var(--danger); margin-top: 1rem; display: none;">Invalid Credentials</p>
+        </div>
+    </section>
+
+    <section id="dashboard-section">
+        <div class="sidebar">
+            <div class="sidebar-header"><i class="fas fa-dragon"></i> WOLF v2.0</div>
+            <nav>
+                <a href="#" class="nav-item active" onclick="switchTab('home')"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="#" class="nav-item" onclick="switchTab('keys')"><i class="fas fa-key"></i> Generate Keys</a>
+                <a href="#" class="nav-item" onclick="switchTab('list')"><i class="fas fa-list"></i> Key List</a>
+                <a href="#" class="nav-item" onclick="showApi()"><i class="fas fa-code"></i> Connect API</a>
+            </nav>
+            <div class="user-info">
+                <div class="user-avatar">A</div>
+                <div>
+                    <div style="font-weight: 600;">Admin</div>
+                    <div style="font-size: 0.8rem; color: var(--success);">Online</div>
+                </div>
+                <i class="fas fa-sign-out-alt" style="margin-left: auto; cursor: pointer; color: var(--danger);" onclick="logout()"></i>
+            </div>
+        </div>
+
+        <div class="main-content">
+            
+            <div id="tab-home">
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard Overview</h1>
+                    <button class="btn btn-primary" onclick="switchTab('keys')">+ New Key</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-key"></i></div>
+                        <div class="stat-value" id="total-keys">0</div>
+                        <div class="stat-label">Total Keys Generated</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-value" id="active-keys">0</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-ban"></i></div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Banned Users</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Recent Activity</h3>
+                    </div>
+                    <div style="color: var(--text-muted); font-size: 0.9rem;">
+                        <p><i class="fas fa-check-circle" style="color: var(--success);"></i> System initialized successfully.</p>
+                        <p style="margin-top: 10px;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> Waiting for key generation...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-keys" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Generate License</h1>
+                </div>
+                
+                <div class="panel">
+                    <div class="form-grid">
+                        <div>
+                            <label style="display:block; margin-bottom:8px; color:var(--text-muted)">Game / App</label>
+                            <select id="game-select" class="form-control">
+                                <option>Free Fire Max</option>
+                                <option>PUBG Mobile</option>
+                                <option>CODM</option>
+                                <option>Custom App</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:8px; color:var(--text-muted)">Duration</label>
+                            <select id="duration-select" class="form-control">
+                                <option value="1">1 Day</option>
+                                <option value="7">7 Days</option>
+                                <option value="30">30 Days</option>
+                                <option value="365">Lifetime</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:8px; color:var(--text-muted)">Max Devices</label>
+                            <input type="number" id="device-limit" value="1" class="form-control">
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:8px; color:var(--text-muted)">Key Prefix (Optional)</label>
+                            <input type="text" id="key-prefix" placeholder="WOLF-" class="form-control">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateKey()">Generate Key</button>
+                </div>
+
+                <div class="panel" id="result-panel" style="display: none; text-align: center; border-color: var(--primary);">
+                    <h3 style="margin-bottom: 1rem; color: var(--primary);">Key Generated Successfully!</h3>
+                    <div id="generated-key-display" style="font-family: monospace; font-size: 1.5rem; background: #000; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                        WOLF-XXXX-XXXX
+                    </div>
+                    <button class="btn btn-primary" onclick="copyKey()">Copy to Clipboard</button>
+                </div>
+            </div>
+
+            <div id="tab-list" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Manage Keys</h1>
+                    <button class="btn btn-danger" onclick="clearKeys()">Delete All</button>
+                </div>
+                
+                <div class="panel" style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Game</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keys-table-body">
+                            </tbody>
+                    </table>
+                    <div id="no-keys-msg" style="text-align: center; padding: 2rem; color: var(--text-muted);">No keys generated yet.</div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <div id="api-modal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3>How to Connect</h3>
+                <i class="fas fa-times" style="cursor: pointer;" onclick="closeApi()"></i>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Since this is hosted on GitHub (Static), you cannot use a database connection. Instead, use this JSON structure logic in your app.</p>
+            
+            <div class="code-block">
+// LUA SCRIPT EXAMPLE
+local key = "USER_ENTERED_KEY"
+local valid_keys = {
+    "WOLF-KEYS-HERE",
+    "GENERATED-KEY-2"
+}
+
+if table.find(valid_keys, key) then
+    print("Login Success")
+else
+    print("Invalid Key")
+end</div>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">*For a real server, you would need PHP hosting. This panel simulates the admin experience.*</p>
+            <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="closeApi()">Got it</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Authentication ---
+        function login() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            
+            // Hardcoded Credentials
+            if(u === 'admin' && p === 'admin') {
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('dashboard-section').style.display = 'flex';
+                loadKeys();
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        // --- Navigation ---
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.getElementById('tab-home').style.display = 'none';
+            document.getElementById('tab-keys').style.display = 'none';
+            document.getElementById('tab-list').style.display = 'none';
+            
+            // Show selected
+            document.getElementById('tab-' + tabName).style.display = 'block';
+            
+            // Update Sidebar Active State
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function showApi() { document.getElementById('api-modal').style.display = 'flex'; }
+        function closeApi() { document.getElementById('api-modal').style.display = 'none'; }
+
+        // --- Key Logic ---
+        function generateRandomString(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function generateKey() {
+            const game = document.getElementById('game-select').value;
+            const duration = document.getElementById('duration-select').value;
+            const prefix = document.getElementById('key-prefix').value || 'WOLF-';
+            
+            const randomPart = generateRandomString(4) + '-' + generateRandomString(4);
+            const fullKey = prefix + randomPart;
+            
+            // Display Result
+            document.getElementById('result-panel').style.display = 'block';
+            document.getElementById('generated-key-display').innerText = fullKey;
+            
+            // Save to LocalStorage
+            saveKeyToStorage(fullKey, game, duration);
+            loadKeys(); // Refresh stats
+        }
+
+        function copyKey() {
+            const keyText = document.getElementById('generated-key-display').innerText;
+            navigator.clipboard.writeText(keyText);
+            alert('Key Copied!');
+        }
+
+        function saveKeyToStorage(key, game, duration) {
+            let keys = JSON.parse(localStorage.getItem('WOLF_keys') || '[]');
+            const newKey = {
+                key: key,
+                game: game,
+                duration: duration,
+                status: 'Active',
+                date: new Date().toLocaleDateString()
+            };
+            keys.push(newKey);
+            localStorage.setItem('WOLF_keys', JSON.stringify(keys));
+        }
+
+        function loadKeys() {
+            const keys = JSON.parse(localStorage.getItem('WOLF_keys') || '[]');
+            const tbody = document.getElementById('keys-table-body');
+            tbody.innerHTML = '';
+            
+            if(keys.length > 0) {
+                document.getElementById('no-keys-msg').style.display = 'none';
+                document.getElementById('total-keys').innerText = keys.length;
+                document.getElementById('active-keys').innerText = keys.length; // Simulating all active
+                
+                keys.forEach((k, index) => {
+                    const row = `
+                        <tr>
+                            <td style="font-family:monospace; color:var(--primary);">${k.key}</td>
+                            <td>${k.game}</td>
+                            <td>${k.duration} Days</td>
+                            <td><span class="status-badge status-active">${k.status}</span></td>
+                            <td>${k.date}</td>
+                            <td><button class="btn-danger" style="padding: 5px 10px; font-size: 0.8rem;" onclick="deleteKey(${index})">Delete</button></td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } else {
+                document.getElementById('no-keys-msg').style.display = 'block';
+                document.getElementById('total-keys').innerText = '0';
+                document.getElementById('active-keys').innerText = '0';
+            }
+        }
+
+        function deleteKey(index) {
+            let keys = JSON.parse(localStorage.getItem('WOLF_keys') || '[]');
+            keys.splice(index, 1);
+            localStorage.setItem('WOLF_keys', JSON.stringify(keys));
+            loadKeys();
+        }
+
+        function clearKeys() {
+            if(confirm('Are you sure you want to delete all keys?')) {
+                localStorage.removeItem('WOLF_keys');
+                loadKeys();
+            }
+        }
+    </script>
+</body>
+</html>
